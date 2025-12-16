@@ -7,7 +7,6 @@ import cv2
 import numpy as np
 import torch
 from loguru import logger
-from PIL import Image
 
 from damo.base_models.core.ops import RepConv
 from damo.config.base import parse_config
@@ -316,7 +315,9 @@ def main():
         output_dir=args.output_dir, ckpt=args.engine, end2end=args.end2end)
 
     if input_type == 'image':
-        origin_img = np.asarray(Image.open(args.path).convert('RGB'))
+        # Load image with OpenCV (no EXIF rotation, matches training data)
+        img = cv2.imread(args.path)
+        origin_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         bboxes, scores, cls_inds = infer_engine.forward(origin_img)
         vis_res = infer_engine.visualize(origin_img, bboxes, scores, cls_inds, conf=args.conf, save_name=os.path.basename(args.path), save_result=args.save_result)
         if not args.save_result:
@@ -328,6 +329,7 @@ def main():
         width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)  # float
         height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)  # float
         fps = cap.get(cv2.CAP_PROP_FPS)
+        vid_writer = None
         if args.save_result:
             save_path = os.path.join(args.output_dir, os.path.basename(args.path))
             print(f'inference result will be saved at {save_path}')
@@ -340,6 +342,7 @@ def main():
                 bboxes, scores, cls_inds = infer_engine.forward(frame)
                 result_frame = infer_engine.visualize(frame, bboxes, scores, cls_inds, conf=args.conf, save_result=False)
                 if args.save_result:
+                    # Convert RGB to BGR for cv2.VideoWriter
                     vid_writer.write(result_frame)
                 else:
                     cv2.namedWindow("DAMO-YOLO", cv2.WINDOW_NORMAL)
@@ -349,6 +352,12 @@ def main():
                     break
             else:
                 break
+
+        # Release resources
+        cap.release()
+        if vid_writer is not None:
+            vid_writer.release()
+        cv2.destroyAllWindows()
 
 
 

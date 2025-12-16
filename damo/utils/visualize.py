@@ -8,6 +8,8 @@ __all__ = ['vis']
 
 
 def vis(img, boxes, scores, cls_ids, conf=0.5, class_names=None):
+    # Make a writable copy of the image to avoid OpenCV readonly error
+    img = np.copy(img)
 
     for i in range(len(boxes)):
         box = boxes[i]
