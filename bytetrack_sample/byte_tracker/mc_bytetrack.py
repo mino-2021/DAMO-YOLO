@@ -4,7 +4,7 @@ import copy
 
 import numpy as np
 
-from bytetrack.tracker.byte_tracker import BYTETracker
+from .tracker.byte_tracker import BYTETracker
 
 
 class dict_dot_notation(dict):
