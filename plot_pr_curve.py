@@ -136,13 +136,18 @@ def compute_pr_curve(coco_gt, results, iou_thresh=0.5):
     # Extract precision and recall
     # precision has shape [T, R, K, A, M]
     # T: iou thresholds, R: recall thresholds, K: categories, A: areas, M: max dets
-    precision = coco_eval.eval['precision'][0, :, 0, 0, 2]  # iou=0.5, all recall, cat 0, all area, maxDet=100
-    recall = coco_eval.params.recThrs
+    # Use mean across all categories (axis 2) instead of single category
+    precision_all = coco_eval.eval['precision'][0, :, :, 0, 2]  # iou, all recall, all cats, all area, maxDet=100
 
-    # Remove -1 values
-    valid = precision >= 0
-    precision = precision[valid]
-    recall = recall[valid]
+    # Average across categories (ignore -1 values per category)
+    precision_list = []
+    for r_idx in range(precision_all.shape[0]):
+        valid_cats = precision_all[r_idx, :] >= 0
+        if np.any(valid_cats):
+            precision_list.append(np.mean(precision_all[r_idx, valid_cats]))
+
+    precision = np.array(precision_list) if precision_list else np.array([0])
+    recall = coco_eval.params.recThrs[:len(precision)]
 
     # Compute AP
     ap = np.mean(precision) if len(precision) > 0 else 0

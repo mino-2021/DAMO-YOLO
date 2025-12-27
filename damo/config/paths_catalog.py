@@ -75,6 +75,14 @@ class DatasetCatalog(object):
             'img_dir': 'dataset_L_coco_norot/images',
             'ann_file': 'dataset_L_coco_norot/annotations/val.json'
         },
+        '2class_norot_train_coco': {
+            'img_dir': 'dataset_2class_norot/images',
+            'ann_file': 'dataset_2class_norot/annotations/train.json'
+        },
+        '2class_norot_val_coco': {
+            'img_dir': 'dataset_2class_norot/images',
+            'ann_file': 'dataset_2class_norot/annotations/val.json'
+        },
         }
 
     @staticmethod
