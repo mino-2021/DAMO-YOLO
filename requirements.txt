@@ -9,3 +9,5 @@ Pillow
 thop
 tabulate
 easydict
+onnxruntime
+lap
